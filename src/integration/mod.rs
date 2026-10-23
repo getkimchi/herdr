@@ -12,7 +12,8 @@ mod types;
 mod version;
 
 pub(crate) use actions::{
-    install_experimental_letta, install_target, uninstall_experimental_letta, uninstall_target,
+    install_experimental_kimchi, install_experimental_letta, install_target,
+    uninstall_experimental_kimchi, uninstall_experimental_letta, uninstall_target,
 };
 #[cfg(test)]
 pub(crate) use env::integration_env_lock;
@@ -20,8 +21,8 @@ pub(crate) use env::{
     apply_pane_base_env, HERDR_PANE_ID_ENV_VAR, HERDR_TAB_ID_ENV_VAR, HERDR_WORKSPACE_ID_ENV_VAR,
 };
 pub(crate) use registry::{
-    experimental_letta_integration_status, installed_integration_statuses,
-    integration_recommendations, integration_target_label, print_outdated_update_notice,
+    experimental_integration_statuses, installed_integration_statuses, integration_recommendations,
+    integration_target_label, print_outdated_update_notice,
 };
 pub(crate) use types::{
     ExperimentalIntegrationStatus, IntegrationRecommendation, IntegrationStatus,
@@ -31,7 +32,7 @@ pub(crate) use types::{
 /// CLI labels for experimental integrations that are intentionally not part of
 /// the frozen client endpoint `IntegrationTarget` enum. Empty this list once the
 /// agent registry provides first-class target registration.
-pub(crate) const EXPERIMENTAL_INTEGRATION_TARGET_LABELS: &[&str] = &["letta"];
+pub(crate) const EXPERIMENTAL_INTEGRATION_TARGET_LABELS: &[&str] = &["letta", "kimchi"];
 
 const PI_EXTENSION_INSTALL_NAME: &str = "herdr-agent-state.ts";
 const PI_EXTENSION_ASSET: &str = include_str!("assets/pi/herdr-agent-state.ts");
@@ -39,6 +40,12 @@ const PI_INTEGRATION_VERSION: u32 = 9;
 const OMP_EXTENSION_INSTALL_NAME: &str = "herdr-omp-agent-state.ts";
 const OMP_EXTENSION_ASSET: &str = include_str!("assets/omp/herdr-agent-state.ts");
 const OMP_INTEGRATION_VERSION: u32 = 10;
+/// Kimchi is pi-family and loads the same extension layout, so it reuses the
+/// pi install name and asset shape. Versioning restarts at 1; the embedded
+/// asset carries the same pidgen v9 protocol semantics as the pi asset.
+const KIMCHI_EXTENSION_INSTALL_NAME: &str = "herdr-agent-state.ts";
+const KIMCHI_EXTENSION_ASSET: &str = include_str!("assets/kimchi/herdr-agent-state.ts");
+const KIMCHI_INTEGRATION_VERSION: u32 = 1;
 const CLAUDE_HOOK_INSTALL_NAME: &str = if cfg!(windows) {
     "herdr-agent-state.ps1"
 } else {

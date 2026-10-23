@@ -199,6 +199,12 @@ pub(crate) struct PiUninstallResult {
 }
 
 #[derive(Debug)]
+pub(crate) struct KimchiUninstallResult {
+    pub extension_path: PathBuf,
+    pub removed_extension: bool,
+}
+
+#[derive(Debug)]
 pub(crate) struct OmpUninstallResult {
     pub extension_path: PathBuf,
     pub removed_extension: bool,

@@ -1423,6 +1423,17 @@
             "on",
             "off"
           ]
+        },
+        {
+          "key": "ui.sound.agents.kimchi",
+          "type": "enum",
+          "default": "\"default\"",
+          "description": "Sound override for detected Kimchi agents.",
+          "values": [
+            "default",
+            "on",
+            "off"
+          ]
         }
       ]
     },

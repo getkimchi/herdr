@@ -935,6 +935,68 @@ fn install_pi_errors_when_extension_dir_missing() {
 }
 
 #[test]
+fn install_kimchi_writes_embedded_asset_to_kimchi_extensions_dir() {
+    let _lock = integration_env_lock();
+    let base = unique_base();
+    let home = base.join("home");
+    let ext_dir = home.join(".config/kimchi/harness/extensions");
+    fs::create_dir_all(&ext_dir).unwrap();
+    std::env::set_var("HOME", &home);
+
+    let path = install_kimchi().unwrap();
+    let content = fs::read_to_string(&path).unwrap();
+
+    assert_eq!(path, ext_dir.join(KIMCHI_EXTENSION_INSTALL_NAME));
+    assert_eq!(content, KIMCHI_EXTENSION_ASSET);
+
+    std::env::remove_var("HOME");
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn install_kimchi_errors_when_extension_dir_missing() {
+    let _lock = integration_env_lock();
+    let base = unique_base();
+    let home = base.join("home");
+    fs::create_dir_all(&home).unwrap();
+    std::env::set_var("HOME", &home);
+
+    let err = install_kimchi().unwrap_err().to_string();
+
+    assert!(err.contains("kimchi extension directory"));
+
+    std::env::remove_var("HOME");
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
+fn uninstall_kimchi_removes_embedded_extension_when_present() {
+    let _lock = integration_env_lock();
+    let base = unique_base();
+    let home = base.join("home");
+    let ext_dir = home.join(".config/kimchi/harness/extensions");
+    fs::create_dir_all(&ext_dir).unwrap();
+    fs::write(
+        ext_dir.join(KIMCHI_EXTENSION_INSTALL_NAME),
+        KIMCHI_EXTENSION_ASSET,
+    )
+    .unwrap();
+    std::env::set_var("HOME", &home);
+
+    let result = uninstall_kimchi().unwrap();
+
+    assert_eq!(
+        result.extension_path,
+        ext_dir.join(KIMCHI_EXTENSION_INSTALL_NAME)
+    );
+    assert!(result.removed_extension);
+    assert!(!result.extension_path.exists());
+
+    std::env::remove_var("HOME");
+    let _ = fs::remove_dir_all(base);
+}
+
+#[test]
 fn install_claude_writes_hook_and_updates_settings() {
     let _lock = integration_env_lock();
     let base = unique_base();

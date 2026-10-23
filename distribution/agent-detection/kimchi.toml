@@ -1,0 +1,32 @@
+id = "kimchi"
+version = "2026.10.23.1"
+min_engine_version = 1
+updated_at = "2026-10-23T00:00:00Z"
+aliases = ["herdr:kimchi"]
+
+# Kimchi's permission prompt renders "Allow the assistant to run this?" with
+# "↑↓ navigate  enter select  escape/ctrl+c cancel" in the transient region
+# above the footer. The prompt disappears from the pane once answered, so a
+# whole_recent scan cannot match a stale, already-answered prompt.
+[[rules]]
+id = "permission_prompt_blocker"
+state = "blocked"
+priority = 300
+region = "whole_recent"
+visible_blocker = true
+contains = ["Allow the assistant to run this?"]
+all = [
+  { any = [{ contains = ["enter select"] }, { contains = ["escape/ctrl+c cancel"] }] },
+]
+
+# Working indicator: a cooking-metaphor spinner in the status area above the
+# input box, e.g. " ◕ Marinating.". Message cycles every 6s through the fixed
+# vocabulary below with 0-3 trailing dots; the line is replaced by the
+# "✻ Worked for ..." summary when the turn ends, so it cannot go stale.
+[[rules]]
+id = "cooking_spinner_working"
+state = "working"
+priority = 100
+region = "bottom_non_empty_lines(12)"
+visible_working = true
+line_regex = ['^\s*\S+\s+(Stirring|Marinating|Chopping|Mixing the gochugaru|Salting the cabbage|Grinding spices|Packing the jar|Massaging the leaves|Reducing|Prepping aromatics|Simmering|Chilling|Seasoning|Tasting|Letting it rest|Rinsing|Building the brine|Cooking|Braising|Tossing everything together)\.{0,3}$']

@@ -46,7 +46,7 @@ fn integration_status(args: &[String]) -> std::io::Result<i32> {
         println!("{target}: {state} ({})", status.path.display());
     }
 
-    if let Some(status) = crate::integration::experimental_letta_integration_status() {
+    for status in crate::integration::experimental_integration_statuses() {
         let state = describe_integration_state(
             status.state,
             status.installed_version,
@@ -93,6 +93,7 @@ fn integration_install(args: &[String]) -> std::io::Result<i32> {
     let installed = match target {
         IntegrationCommandTarget::Builtin(target) => crate::integration::install_target(target),
         IntegrationCommandTarget::Letta => crate::integration::install_experimental_letta(),
+        IntegrationCommandTarget::Kimchi => crate::integration::install_experimental_kimchi(),
     };
     match installed {
         Ok(messages) => {
@@ -114,6 +115,7 @@ fn integration_uninstall(args: &[String]) -> std::io::Result<i32> {
     let removed = match target {
         IntegrationCommandTarget::Builtin(target) => crate::integration::uninstall_target(target),
         IntegrationCommandTarget::Letta => crate::integration::uninstall_experimental_letta(),
+        IntegrationCommandTarget::Kimchi => crate::integration::uninstall_experimental_kimchi(),
     };
     match removed {
         Ok(messages) => {
@@ -133,12 +135,14 @@ fn print_integration_messages(messages: Vec<String>) {
     }
 }
 
-/// Integration target accepted by the CLI. Letta is deliberately kept out of
-/// the frozen client endpoint `IntegrationTarget` enum and is handled as an
-/// experimental CLI-only target until the agent registry replaces it.
+/// Integration target accepted by the CLI. Letta and Kimchi are deliberately
+/// kept out of the frozen client endpoint `IntegrationTarget` enum and are
+/// handled as experimental CLI-only targets until the agent registry replaces
+/// it.
 enum IntegrationCommandTarget {
     Builtin(IntegrationTarget),
     Letta,
+    Kimchi,
 }
 
 fn parse_integration_target(
@@ -147,13 +151,13 @@ fn parse_integration_target(
 ) -> std::io::Result<Option<IntegrationCommandTarget>> {
     let Some(target) = args.first().map(|arg| arg.as_str()) else {
         eprintln!(
-            "usage: herdr integration {action} <pi|omp|claude|codex|copilot|devin|droid|kimi|opencode|kilo|hermes|qodercli|qwen|letta|cursor|mastracode|grok>"
+            "usage: herdr integration {action} <pi|omp|claude|codex|copilot|devin|droid|kimi|kimchi|opencode|kilo|hermes|qodercli|qwen|letta|cursor|mastracode|grok>"
         );
         return Ok(None);
     };
     if args.len() != 1 {
         eprintln!(
-            "usage: herdr integration {action} <pi|omp|claude|codex|copilot|devin|droid|kimi|opencode|kilo|hermes|qodercli|qwen|letta|cursor|mastracode|grok>"
+            "usage: herdr integration {action} <pi|omp|claude|codex|copilot|devin|droid|kimi|kimchi|opencode|kilo|hermes|qodercli|qwen|letta|cursor|mastracode|grok>"
         );
         return Ok(None);
     }
@@ -172,6 +176,7 @@ fn parse_integration_target(
         "hermes" => IntegrationCommandTarget::Builtin(IntegrationTarget::Hermes),
         "qodercli" => IntegrationCommandTarget::Builtin(IntegrationTarget::Qodercli),
         "qwen" => IntegrationCommandTarget::Builtin(IntegrationTarget::Qwen),
+        "kimchi" => IntegrationCommandTarget::Kimchi,
         "letta" => IntegrationCommandTarget::Letta,
         "cursor" => IntegrationCommandTarget::Builtin(IntegrationTarget::Cursor),
         "mastracode" => IntegrationCommandTarget::Builtin(IntegrationTarget::Mastracode),
@@ -182,7 +187,7 @@ fn parse_integration_target(
         _ => {
             eprintln!("unknown integration target: {target}");
             eprintln!(
-                "currently supported: pi, omp, claude, codex, copilot, devin, droid, kimi, opencode, kilo, hermes, qodercli, qwen, letta, cursor, mastracode, antigravity-cli, grok"
+                "currently supported: pi, omp, claude, codex, copilot, devin, droid, kimi, kimchi, opencode, kilo, hermes, qodercli, qwen, letta, cursor, mastracode, antigravity-cli, grok"
             );
             return Ok(None);
         }
@@ -207,6 +212,7 @@ fn print_integration_help() {
     eprintln!("  herdr integration install qodercli");
     eprintln!("  herdr integration install qwen");
     eprintln!("  herdr integration install letta");
+    eprintln!("  herdr integration install kimchi");
     eprintln!("  herdr integration install cursor");
     eprintln!("  herdr integration install mastracode");
     eprintln!("  herdr integration install antigravity-cli");
@@ -225,6 +231,7 @@ fn print_integration_help() {
     eprintln!("  herdr integration uninstall qodercli");
     eprintln!("  herdr integration uninstall qwen");
     eprintln!("  herdr integration uninstall letta");
+    eprintln!("  herdr integration uninstall kimchi");
     eprintln!("  herdr integration uninstall cursor");
     eprintln!("  herdr integration uninstall mastracode");
     eprintln!("  herdr integration uninstall antigravity-cli");

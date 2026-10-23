@@ -49,6 +49,7 @@ afterEach(async () => {
 const integrations = [
   { name: "Pi", modulePath: "./pi/herdr-agent-state.ts" },
   { name: "Oh My Pi", modulePath: "./omp/herdr-agent-state.ts" },
+  { name: "Kimchi", modulePath: "./kimchi/herdr-agent-state.ts" },
 ] as const;
 
 const socketPlugins = [
@@ -403,6 +404,44 @@ test("Pi reports the session replacement source", async () => {
   expect(request).toBeDefined();
   expect(isRecord(request) && isRecord(request.params) ? request.params.session_start_source : null)
     .toBe("new");
+});
+
+test("Kimchi reports its own source and agent identity", async () => {
+  const requests = await startRecordingServer("kimchi-session-identity");
+  const { handlers, pi } = createExtensionHarness();
+
+  const { default: install } = await importFresh("./kimchi/herdr-agent-state.ts");
+  install(pi);
+
+  await handlers.get("session_start")?.(
+    { reason: "new" },
+    {
+      hasUI: true,
+      mode: "tui",
+      isIdle: () => true,
+      sessionManager: {
+        getSessionFile: () => "/tmp/kimchi-new.jsonl",
+        getSessionId: () => "kimchi-new",
+      },
+    },
+  );
+
+  const reportedSession = () =>
+    requests.find((request) => isRecord(request) && request.method === "pane.report_agent_session");
+  const deadline = Date.now() + 1_000;
+  while (Date.now() < deadline && reportedSession() === undefined) {
+    await Bun.sleep(5);
+  }
+
+  const request = reportedSession();
+  expect(request).toBeDefined();
+  if (!isRecord(request) || !isRecord(request.params)) {
+    throw new Error("session report not captured");
+  }
+  expect(request.params.source).toBe("herdr:kimchi");
+  expect(request.params.agent).toBe("kimchi");
+  expect(request.params.agent_session_path).toBe("/tmp/kimchi-new.jsonl");
+  expect(request.params.session_start_source).toBe("new");
 });
 
 test("Pi waits for a replacement session report before publishing state", async () => {

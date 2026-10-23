@@ -515,6 +515,36 @@ pub(crate) fn experimental_letta_integration_status() -> Option<super::Experimen
     })
 }
 
+pub(crate) fn experimental_integration_statuses(
+) -> impl Iterator<Item = super::ExperimentalIntegrationStatus> {
+    [
+        experimental_kimchi_integration_status(),
+        experimental_letta_integration_status(),
+    ]
+    .into_iter()
+    .flatten()
+}
+
+/// Kimchi follows the Letta experiment: kept out of the frozen client
+/// endpoint `IntegrationTarget` enum and installable as a CLI-only target
+/// until the agent registry replaces the enum-keyed registry. Unlike letta it
+/// reports full lifecycle state, so the status path mirrors pi's asset.
+pub(crate) fn experimental_kimchi_integration_status(
+) -> Option<super::ExperimentalIntegrationStatus> {
+    let path = kimchi_extension_dir()
+        .ok()?
+        .join(super::KIMCHI_EXTENSION_INSTALL_NAME);
+    let (state, installed_version) =
+        integration_state_for_path(&path, super::KIMCHI_INTEGRATION_VERSION);
+    Some(super::ExperimentalIntegrationStatus {
+        label: "kimchi",
+        path,
+        state,
+        installed_version,
+        expected_version: super::KIMCHI_INTEGRATION_VERSION,
+    })
+}
+
 pub(crate) fn parse_integration_version(content: &str) -> Option<u32> {
     content.lines().find_map(|line| {
         let marker_line = line

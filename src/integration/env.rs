@@ -39,6 +39,17 @@ pub(crate) fn pi_extension_dir() -> io::Result<PathBuf> {
     )
 }
 
+/// Kimchi pins its agent dir to `~/.config/kimchi/harness` on every
+/// platform (src/entry.ts sets PI_CODING_AGENT_DIR unconditionally), so the
+/// extension dir is fixed home-relative with no env override.
+pub(crate) fn kimchi_extension_dir() -> io::Result<PathBuf> {
+    Ok(home_dir()?
+        .join(".config")
+        .join("kimchi")
+        .join("harness")
+        .join("extensions"))
+}
+
 pub(crate) fn omp_extension_dir() -> io::Result<PathBuf> {
     if let Some(value) =
         std::env::var_os(PI_CODING_AGENT_DIR_ENV_VAR).filter(|value| !value.is_empty())

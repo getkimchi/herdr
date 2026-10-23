@@ -56,6 +56,7 @@ pub enum Agent {
     Kimi,
     Kiro,
     Droid,
+    Kimchi,
     Amp,
     Grok,
     Hermes,
@@ -68,7 +69,7 @@ pub enum Agent {
 }
 
 impl Agent {
-    pub const ALL: [Self; 24] = [
+    pub const ALL: [Self; 25] = [
         Self::Pi,
         Self::Claude,
         Self::Codex,
@@ -84,6 +85,7 @@ impl Agent {
         Self::Kimi,
         Self::Kiro,
         Self::Droid,
+        Self::Kimchi,
         Self::Amp,
         Self::Grok,
         Self::Hermes,
@@ -95,7 +97,7 @@ impl Agent {
         Self::Muse,
     ];
 
-    pub const SCREEN_MANIFEST_AGENTS: [Self; 22] = [
+    pub const SCREEN_MANIFEST_AGENTS: [Self; 23] = [
         Self::Pi,
         Self::Claude,
         Self::Codex,
@@ -109,6 +111,7 @@ impl Agent {
         Self::Kimi,
         Self::Kiro,
         Self::Droid,
+        Self::Kimchi,
         Self::Amp,
         Self::Grok,
         Self::Hermes,
@@ -138,6 +141,7 @@ pub fn agent_label(agent: Agent) -> &'static str {
         Agent::Kimi => "kimi",
         Agent::Kiro => "kiro",
         Agent::Droid => "droid",
+        Agent::Kimchi => "kimchi",
         Agent::Amp => "amp",
         Agent::Grok => "grok",
         Agent::Hermes => "hermes",
@@ -173,6 +177,7 @@ pub fn interactive_agent_executable(agent: Agent) -> &'static str {
         Agent::Kimi => "kimi",
         Agent::Kiro => "kiro-cli",
         Agent::Droid => "droid",
+        Agent::Kimchi => "kimchi",
         Agent::Amp => "amp",
         Agent::Grok => "grok",
         Agent::Hermes => "hermes",
@@ -211,6 +216,7 @@ fn lookup_agent(name: &str) -> Option<Agent> {
         "opencode" | "opencode2" | "open-code" => Some(Agent::OpenCode),
         "copilot" | "github-copilot" | "ghcs" => Some(Agent::GithubCopilot),
         "kimi" | "kimi-code" | "kimi code" => Some(Agent::Kimi),
+        "kimchi" => Some(Agent::Kimchi),
         "kiro" | "kiro-cli" => Some(Agent::Kiro),
         "droid" => Some(Agent::Droid),
         "amp" | "amp-local" => Some(Agent::Amp),
@@ -336,6 +342,7 @@ pub(crate) fn full_lifecycle_hook_authority(source: &str, agent_label: &str) -> 
             | ("herdr:opencode", "opencode")
             | ("herdr:kilo", "kilo")
             | ("herdr:kimi", "kimi")
+            | ("herdr:kimchi", "kimchi")
     )
 }
 
@@ -1099,6 +1106,7 @@ mod tests {
             (Agent::OpenCode, "opencode"),
             (Agent::GithubCopilot, "copilot"),
             (Agent::Kimi, "kimi"),
+            (Agent::Kimchi, "kimchi"),
             (Agent::Kiro, "kiro-cli"),
             (Agent::Droid, "droid"),
             (Agent::Amp, "amp"),
