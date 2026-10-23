@@ -63,7 +63,7 @@ Herdr 对 Linux/macOS 上的集成配置和所有平台的新文件使用原子�
 
 每个集成都会告诉 Herdr 智能体当前所在的会话,这样 Herdr 就能在服务器重启后恢复它。用 `[session] resume_agents_on_restore = false` 可以关闭。
 
-Pi、OMP、Kimi Code CLI、OpenCode、Kilo Code CLI 和 MastraCode 的集成还会上报智能体的状态。在它们上报期间,Herdr 使用这些上报,而不是读取屏幕。其他集成则把状态交给屏幕检测。
+Pi、OMP、Kimi Code CLI、OpenCode、Kilo Code CLI、Kimchi 和 MastraCode 的集成还会上报智能体的状态。在它们上报期间,Herdr 使用这些上报,而不是读取屏幕。其他集成则把状态交给屏幕检测。
 
 原生会话恢复需要最新的 Herdr 集成: Pi 集成版本 `2`、OMP 版本 `3`、Claude Code 版本 `6`、Codex 版本 `5`、GitHub Copilot CLI 版本 `2`、Devin CLI 版本 `2`、Droid 版本 `2`、Kimi Code CLI 版本 `3`、Qoder CLI 版本 `2`、Qwen Code 版本 `1`、Letta Code 版本 `1`、Kimchi 版本 `1`、Cursor Agent CLI 版本 `1`、Grok CLI 版本 `2`、OpenCode 版本 `5`、Kilo Code CLI 版本 `1`、Hermes Agent 版本 `5`、MastraCode 版本 `1`、Antigravity CLI 版本 `1`。用 `herdr integration status` 查看已安装版本。
 
@@ -287,7 +287,7 @@ Kimchi 集成安装是实验性的 CLI 专用功能，不在 Settings 的集成�
 herdr integration install kimchi
 ```
 
-扩展会上报会话标识,用于原生恢复。Kimchi 状态仍来自 Herdr 的屏幕清单检测。
+扩展会上报生命周期状态和会话标识,用于原生恢复。扩展上报期间,Herdr 会使用这些上报而不是读取屏幕;否则 Kimchi 状态来自 Herdr 的屏幕清单检测。
 
 Herdr 使用 `~/.config/kimchi/harness/extensions`。扩展目录必须已经存在;先启动一次 kimchi 以创建该目录,然后重新运行安装。安装会把 `herdr-agent-state.ts` 写入该目录。卸载只移除托管的扩展文件。
 

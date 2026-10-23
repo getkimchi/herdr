@@ -1,32 +1,51 @@
 id = "kimchi"
-version = "2026.10.23.1"
+version = "2026.10.23.3"
 min_engine_version = 1
 updated_at = "2026-10-23T00:00:00Z"
 aliases = ["herdr:kimchi"]
 
 # Kimchi's permission prompt renders "Allow the assistant to run this?" with
-# "↑↓ navigate  enter select  escape/ctrl+c cancel" in the transient region
-# above the footer. The prompt disappears from the pane once answered, so a
-# whole_recent scan cannot match a stale, already-answered prompt.
+# "↑↓ navigate  enter select  escape/ctrl+c cancel" as the live control strip
+# directly above the input box's top border. Matching is bound to that
+# structure: the question must appear near the bottom AND the full control
+# strip must sit immediately (blank lines aside) above the box border, so
+# transcript prose that merely quotes the strings cannot classify as blocked.
 [[rules]]
 id = "permission_prompt_blocker"
 state = "blocked"
 priority = 300
-region = "whole_recent"
+region = "bottom_non_empty_lines(12)"
 visible_blocker = true
 contains = ["Allow the assistant to run this?"]
-all = [
-  { any = [{ contains = ["enter select"] }, { contains = ["escape/ctrl+c cancel"] }] },
-]
+regex = ['(?m)^[ \t]*↑↓ navigate[ \t]+enter select[ \t]+escape/ctrl\+c cancel[ \t]*\n(?:[ \t]*\n)*─{3,}']
 
-# Working indicator: a cooking-metaphor spinner in the status area above the
-# input box, e.g. " ◕ Marinating.". Message cycles every 6s through the fixed
-# vocabulary below with 0-3 trailing dots; the line is replaced by the
-# "✻ Worked for ..." summary when the turn ends, so it cannot go stale.
+# Working indicator: the cooking animator renders "<glyph> <message><0-3 dots>"
+# in the status strip above the "Tip: Press shift+tab" hint line and the input
+# box border (spinner.ts pairs each message with its own glyph frames; the TUI
+# pads the strip with blank lines, hence the blank-line tolerance). Each branch
+# requires the message's own glyph set AND the border-adjacent position, so
+# transcript prose that merely names a verb ("* Cooking") or quotes a spinner
+# line higher up in the scrollback cannot match. The line is replaced by the
+# "✻ Worked for ..." summary when the turn ends, so a matched frame cannot go
+# stale.
 [[rules]]
 id = "cooking_spinner_working"
 state = "working"
 priority = 100
-region = "bottom_non_empty_lines(12)"
+region = "bottom_non_empty_lines(8)"
 visible_working = true
-line_regex = ['^\s*\S+\s+(Stirring|Marinating|Chopping|Mixing the gochugaru|Salting the cabbage|Grinding spices|Packing the jar|Massaging the leaves|Reducing|Prepping aromatics|Simmering|Chilling|Seasoning|Tasting|Letting it rest|Rinsing|Building the brine|Cooking|Braising|Tossing everything together)\.{0,3}$']
+any = [
+  { regex = ['(?m)^[ \t][\\|/-][ \t]+(?:Stirring|Chopping|Grinding spices|Massaging the leaves)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][○◔◑◕●][ \t]+(?:Marinating)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][◐◓◑◒][ \t]+(?:Mixing the gochugaru)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][•·+×][ \t]+(?:Salting the cabbage|Simmering|Seasoning|Building the brine)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][_\-][ \t]+(?:Packing the jar)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][▁▂▃▄▅▆▇█][ \t]+(?:Reducing)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][✦✧][ \t]+(?:Prepping aromatics)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][❄·][ \t]+(?:Chilling)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][ˊ`][ \t]+(?:Tasting)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][zZ][ \t]+(?:Letting it rest)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][~-][ \t]+(?:Rinsing|Braising)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏][ \t]+(?:Cooking)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+  { regex = ['(?m)^[ \t][⊙⊚][ \t]+(?:Tossing everything together)\.{0,3}[ \t]*\n(?:[ \t]*\n)*(?:Tip: Press shift\+tab to change permissions mode\.[ \t]*\n(?:[ \t]*\n)*)?─{3,}'] },
+]

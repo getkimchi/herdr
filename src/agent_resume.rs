@@ -681,6 +681,88 @@ mod tests {
     }
 
     #[test]
+    fn kimchi_report_and_snapshot_refs_follow_the_pi_path_group() {
+        let kimchi_session = absolute_test_path("kimchi-session.jsonl");
+
+        // Report conversion: path preferred, invalid path falls back to the id.
+        let session_ref = session_ref_from_report(
+            "herdr:kimchi",
+            "kimchi",
+            Some("kimchi-id".into()),
+            Some(kimchi_session.clone()),
+        )
+        .unwrap();
+        assert_eq!(session_ref.kind, AgentSessionRefKind::Path);
+        assert_eq!(session_ref.value, kimchi_session);
+
+        let session_ref = session_ref_from_report(
+            "herdr:kimchi",
+            "kimchi",
+            Some("kimchi-id".into()),
+            Some("relative.jsonl".into()),
+        )
+        .unwrap();
+        assert_eq!(session_ref.kind, AgentSessionRefKind::Id);
+        assert_eq!(session_ref.value, "kimchi-id");
+
+        let session_ref =
+            session_ref_from_report("herdr:kimchi", "kimchi", Some("kimchi-id".into()), None)
+                .unwrap();
+        assert_eq!(session_ref.kind, AgentSessionRefKind::Id);
+        assert_eq!(session_ref.value, "kimchi-id");
+
+        assert!(
+            session_ref_from_report("herdr:kimchi", "kimchi", Some("bad\nid".into()), None)
+                .is_none()
+        );
+        assert!(
+            session_ref_from_report("custom:kimchi", "kimchi", Some("kimchi-id".into()), None)
+                .is_none()
+        );
+
+        // Snapshot restore: paths for the pi path group, ids via the shared arm.
+        let restored = session_ref_from_snapshot(
+            "herdr:kimchi",
+            "kimchi",
+            AgentSessionRefKind::Path,
+            &kimchi_session,
+        )
+        .unwrap();
+        assert_eq!(restored.agent, "kimchi");
+        assert_eq!(restored.session_ref.kind, AgentSessionRefKind::Path);
+        assert_eq!(restored.session_ref.value, kimchi_session);
+
+        let restored = session_ref_from_snapshot(
+            "herdr:kimchi",
+            "kimchi",
+            AgentSessionRefKind::Id,
+            "kimchi-id",
+        )
+        .unwrap();
+        assert_eq!(restored.session_ref.kind, AgentSessionRefKind::Id);
+
+        assert!(session_ref_from_snapshot(
+            "herdr:kimchi",
+            "kimchi",
+            AgentSessionRefKind::Path,
+            "relative.jsonl"
+        )
+        .is_none());
+
+        // Both ref kinds resume with kimchi's `--session <value>` form.
+        assert_eq!(
+            plan(
+                "herdr:kimchi",
+                "kimchi",
+                &AgentSessionRef::id("kimchi-id").unwrap()
+            )
+            .unwrap()
+            .argv,
+            vec!["kimchi", "--session", "kimchi-id"]
+        );
+    }
+
+    #[test]
     fn planner_rejects_custom_and_unsupported_path_refs() {
         let claude_session = absolute_test_path("claude-session");
         assert!(plan(

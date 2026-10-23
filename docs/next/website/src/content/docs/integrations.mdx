@@ -61,7 +61,7 @@ Herdr saves integration configs atomically on Linux/macOS and for new files; exi
 
 Every integration tells Herdr which session the agent is in, so Herdr can resume it after a server restart. Turn this off with `[session] resume_agents_on_restore = false`.
 
-The Pi, OMP, Kimi Code CLI, OpenCode, Kilo Code CLI, and MastraCode integrations also report the agent's state. While they report, Herdr uses them instead of reading the screen. The others leave state to screen detection.
+The Pi, OMP, Kimi Code CLI, OpenCode, Kilo Code CLI, Kimchi, and MastraCode integrations also report the agent's state. While they report, Herdr uses them instead of reading the screen. The others leave state to screen detection.
 
 Native session restore requires current Herdr integrations: Pi integration version `2`, OMP version `3`, Claude Code version `6`, Codex version `5`, GitHub Copilot CLI version `2`, Devin CLI version `2`, Droid version `2`, Kimi Code CLI version `3`, Qoder CLI version `2`, Qwen Code version `1`, Letta Code version `1`, Kimchi version `1`, Cursor Agent CLI version `1`, Grok CLI version `2`, OpenCode version `5`, Kilo Code CLI version `1`, Hermes Agent version `5`, MastraCode version `1`, or Antigravity CLI version `1`. Check installed versions with `herdr integration status`.
 
@@ -285,7 +285,7 @@ Install the Kimchi extension:
 herdr integration install kimchi
 ```
 
-The extension reports session identity for native restore. Kimchi state comes from Herdr's screen manifest detection.
+The extension reports lifecycle state and session identity for native restore. While the extension reports, Herdr uses those reports instead of reading the screen; otherwise Kimchi state comes from Herdr's screen manifest detection.
 
 Herdr uses `~/.config/kimchi/harness/extensions`. The extension directory must already exist; launch kimchi once to create it, then re-run install. Install writes `herdr-agent-state.ts` into that directory. Uninstall removes only the managed extension file.
 

@@ -442,6 +442,21 @@ test("Kimchi reports its own source and agent identity", async () => {
   expect(request.params.agent).toBe("kimchi");
   expect(request.params.agent_session_path).toBe("/tmp/kimchi-new.jsonl");
   expect(request.params.session_start_source).toBe("new");
+
+  const stateReports = () =>
+    requests.filter((r) => isRecord(r) && r.method === "pane.report_agent");
+  const stateDeadline = Date.now() + 1_000;
+  while (Date.now() < stateDeadline && stateReports().length === 0) {
+    await Bun.sleep(5);
+  }
+  expect(stateReports().length).toBeGreaterThan(0);
+  for (const stateReport of stateReports()) {
+    if (!isRecord(stateReport) || !isRecord(stateReport.params)) {
+      throw new Error("state report missing params");
+    }
+    expect(stateReport.params.source).toBe("herdr:kimchi");
+    expect(stateReport.params.agent).toBe("kimchi");
+  }
 });
 
 test("Pi waits for a replacement session report before publishing state", async () => {

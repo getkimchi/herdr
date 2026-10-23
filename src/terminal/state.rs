@@ -2946,6 +2946,57 @@ mod tests {
     }
 
     #[test]
+    fn kimchi_session_replacement_reports_reanchor_full_lifecycle_authority() {
+        for reason in ["new", "resume", "fork"] {
+            let mut terminal = test_terminal();
+            let old_session = test_session_path(&format!("kimchi-{reason}-old.jsonl"));
+            let new_session = test_session_path(&format!("kimchi-{reason}-new.jsonl"));
+            terminal.set_detected_state(Some(Agent::Kimchi), AgentState::Idle);
+            terminal.set_hook_authority_with_session_ref(
+                "herdr:kimchi".into(),
+                "kimchi".into(),
+                AgentState::Idle,
+                None,
+                crate::agent_resume::AgentSessionRef::path(old_session),
+                Some(10),
+            );
+
+            let session_report = terminal.set_agent_session_ref_for_session_start(
+                "herdr:kimchi".into(),
+                "kimchi".into(),
+                crate::agent_resume::AgentSessionRef::path(new_session.clone()),
+                Some(11),
+                Some(reason.into()),
+            );
+
+            assert!(
+                session_report.is_some(),
+                "{reason} should replace the previous Kimchi session"
+            );
+            assert!(terminal.hook_authority.is_none());
+
+            let working = terminal.set_hook_authority_with_session_ref(
+                "herdr:kimchi".into(),
+                "kimchi".into(),
+                AgentState::Working,
+                None,
+                crate::agent_resume::AgentSessionRef::path(new_session.clone()),
+                Some(12),
+            );
+
+            assert!(
+                working.is_some(),
+                "{reason} should accept working for the replacement session"
+            );
+            assert_eq!(terminal.state, AgentState::Working);
+            assert_eq!(
+                terminal.hook_authority.as_ref().unwrap().session_ref,
+                crate::agent_resume::AgentSessionRef::path(new_session)
+            );
+        }
+    }
+
+    #[test]
     fn pi_resume_reactivates_a_previously_stale_session() {
         let mut terminal = test_terminal();
         let session_a = test_session_path("pi-session-a.jsonl");
